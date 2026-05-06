@@ -97,3 +97,13 @@ docs/_build/
 .AppleDouble
 .LSOverride
 *.sublime-workspace
+
+# Local setup and personal notes (never push these)
+BUILD_INSTRUCTIONS.md
+CHANGELOG.txt
+GITHUB_PUSH_DOCUMENTATION.md
+PUSH_GUIDE.md
+READY_TO_BUILD.txt
+SETUP_CHECKLIST.md
+SETUP_COMPLETE.txt
+SETUP_STATUS.md
