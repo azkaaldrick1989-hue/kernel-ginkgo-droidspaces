@@ -1,0 +1,99 @@
+# Build outputs - CRITICAL: out/ contains 500MB+ of build artifacts
+out/
+*.o
+*.a
+*.so
+*.ko
+*.ko.xz
+*.mod.c
+*.symtypes
+.tmp_versions/
+
+# Build artifacts that should never be committed
+built-in.o
+Module.symvers
+modules.order
+System.map
+vmlinux.o
+vmlinux.lds
+
+# Compiled binaries
+*.bin
+*.elf
+*.elf.lds
+*.S
+*.s
+*.i
+
+# Configuration
+.config
+.config.old
+.version
+
+# Kernel build artifacts
+vmlinux
+vmlinux.o
+vmlinux.lds
+Image
+Image.gz
+Image.gz-dtb
+zImage
+uImage
+boot.img
+
+# Temporary files
+*~
+*.swp
+*.swo
+*.swn
+*.bak
+.#*
+
+# Toolchain (only keep reference, don't commit binaries)
+toolchains/clang/*
+toolchains/gcc/*
+!toolchains/.gitkeep
+
+# Editor files
+.vscode/
+.idea/
+*.iml
+tags
+TAGS
+cscope.*
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Build cache
+.ccache/
+ccache.log
+
+# Devel and debug stuff
+.gdb_history
+.lldb_history
+
+# Output archives
+*.zip
+*.tar
+*.tar.gz
+*.tar.bz2
+
+# Don't commit pre-built binaries
+*.bin
+*.firmware
+*.fw
+
+# AnyKernel3 output (keep template, exclude zips)
+AnyKernel3/*.zip
+AnyKernel3/out/
+
+# Generated docs
+docs/_build/
+
+# OS-specific files
+.DS_Store
+.AppleDouble
+.LSOverride
+*.sublime-workspace
