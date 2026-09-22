@@ -1,51 +1,47 @@
-name: Build Kernel Ginkgo
+name: Build Android Kernel
 
 on:
-  workflow_dispatch: # Memungkinkan Anda menjalankan build secara manual dari web GitHub
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04 # Menggunakan Ubuntu versi stabil
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Kernel Source
-      uses: actions/checkout@v4
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-    - name: Install Build Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git gnupg gperf lib32readline-dev lib32z1-dev libelf-dev liblz4-tool libncurses5-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential bc bison flex libssl-dev libelf-dev \
+            cpio zip unzip rsync git wget curl python3 python-is-python3 \
+            device-tree-compiler ninja-build clang llvm lld
 
-    - name: Download Clang Toolchain
-      run: |
-        # Mengunduh AOSP Clang versi 17 (cocok untuk banyak kernel Android 11-14)
-        mkdir -p $GITHUB_WORKSPACE/clang
-        cd $GITHUB_WORKSPACE/clang
-        curl -LO https://googlesource.com
-        tar -xf clang-r498229b.tar.gz
-        rm clang-r498229b.tar.gz
+      - name: Build Kernel
+        run: |
+          # 1. Menyatukan Environment Variables agar tidak hilang antar-proses
+          export ARCH=arm64
+          export SUBARCH=arm64
+          export LLVM=1
+          export LLVM_IAS=1
+          
+          # Membuat folder output kompilasi
+          mkdir -p out
+          
+          # 2. Membuat Konfigurasi Kernel
+          # ⚠️ UBAH 'ginkgo_defconfig' di bawah jika nama file defconfig di folder arch/arm64/configs/ Anda berbeda!
+          make O=out ARCH=arm64 ginkgo_defconfig
+          
+          # 3. Proses Kompilasi Utama (Menghapus menuconfig karena memicu hang/macet)
+          make -j"$(nproc)" O=out ARCH=arm64 LLVM=1 LLVM_IAS=1 Image modules
 
-    - name: Compile Kernel
-      run: |
-        export PATH="$GITHUB_WORKSPACE/clang/bin:$PATH"
-        export ARCH=arm64
-        export SUBARCH=arm64
-        export CROSS_COMPILE=aarch64-linux-gnu-
-        export CROSS_COMPILE_COMPAT=arm-linux-gnueabi-
-        export CLANG_TRIPLE=aarch64-linux-gnu-
-        export CC=clang
-        
-        # Bersihkan direktori out sebelum compile
-        make clean && make mrproper
-        
-        # ⚠️ GANTI 'ginkgo_defconfig' di bawah dengan nama file defconfig asli kernel Anda jika berbeda
-        make O=out ginkgo_defconfig
-        
-        # Proses kompilasi menggunakan semua core yang tersedia
-        make O=out -j$(nproc --all)
-
-    - name: Upload Finished Kernel
-      uses: actions/upload-artifact@v4
-      with:
-        name: Ginkgo-Kernel-Image
-        path: out/arch/arm64/boot/Image.gz-dtb # Sesuaikan jika kernel Anda menghasilkan nama output berbeda (misal: Image atau Image.gz)
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-artifacts
+          path: |
+            out/arch/arm64/boot/Image
+            out/arch/arm64/boot/Image*
+            out/arch/arm64/boot/dtb*
+            out/lib/modules
