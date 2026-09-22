@@ -18,21 +18,22 @@ jobs:
             cpio zip unzip rsync git wget curl python3 python-is-python3 \
             device-tree-compiler ninja-build clang llvm lld
 
-      - name: Setup build env
+      - name: Build Kernel
         run: |
+          # 1. Definisikan Environment (Wajib digabung dalam satu step agar terbaca)
           export ARCH=arm64
           export SUBARCH=arm64
           export LLVM=1
           export LLVM_IAS=1
+          
+          # Buat folder output
           mkdir -p out
-
-      - name: Configure kernel
-        run: |
-          make O=out ARCH=arm64 vendor_defconfig || true
-          make O=out ARCH=arm64 menuconfig || true
-
-      - name: Build kernel
-        run: |
+          
+          # 2. Konfigurasi Kernel
+          # ⚠️ UBAH 'ginkgo_defconfig' di bawah sesuai nama defconfig asli di folder arch/arm64/configs/ Anda
+          make O=out ARCH=arm64 ginkgo_defconfig
+          
+          # 3. Proses Kompilasi
           make -j"$(nproc)" O=out ARCH=arm64 LLVM=1 LLVM_IAS=1 Image modules
 
       - name: Upload artifact
@@ -41,6 +42,6 @@ jobs:
           name: kernel-artifacts
           path: |
             out/arch/arm64/boot/Image
-            out/arch/arm64/boot/Image.gz
-            out/arch/arm64/boot/dtb
+            out/arch/arm64/boot/Image*
+            out/arch/arm64/boot/dtb*
             out/lib/modules
